@@ -6,6 +6,7 @@ WORKDIR /app
 
 # 3. Copy only dependency file first (for Docker caching)
 COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
 # 4. Install Python dependencies (add curl if you use MLflow local tracking URI)
 RUN pip install --upgrade pip \
