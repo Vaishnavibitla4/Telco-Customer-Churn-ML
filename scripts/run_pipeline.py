@@ -37,7 +37,7 @@ def main(args):
     # === MLflow Setup - ESSENTIAL for experiment tracking ===
     # Configure MLflow to use local file-based tracking (not a tracking server)
     project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-    mlruns_path = args.mlflow_uri or f"file://{project_root}/mlruns"  # Local file-based tracking
+    mlruns_path = args.mlflow_uri or "mlruns"  # Local file-based tracking
     mlflow.set_tracking_uri(mlruns_path)
     mlflow.set_experiment(args.experiment)  # Creates experiment if doesn't exist
 
@@ -52,6 +52,15 @@ def main(args):
         # === STAGE 1: Data Loading & Validation ===
         print("🔄 Loading data...")
         df = load_data(args.input)  # Load raw CSV data with error handling
+        # 🔥 FORCE FIX (must be here)
+
+
+        print("Before fix:", df["TotalCharges"].dtype)
+
+        df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
+        df["TotalCharges"] = df["TotalCharges"].fillna(df["TotalCharges"].median())
+
+        print("After fix:", df["TotalCharges"].dtype)
         print(f"✅ Data loaded: {df.shape[0]} rows, {df.shape[1]} columns")
 
         # === CRITICAL: Data Quality Validation ===
