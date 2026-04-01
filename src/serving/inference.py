@@ -32,7 +32,7 @@ import mlflow
 # IMPORTANT: This path is set during Docker container build
 # In development: uses local MLflow artifacts
 # In production: uses model copied to container at build time
-MODEL_DIR = ""
+MODEL_DIR = "./mlruns/236788551061488637/c4a74d68502e49dfaefb1712c5b64ed9/artifacts/model"
 
 try:
     # Load the trained XGBoost model in MLflow pyfunc format
