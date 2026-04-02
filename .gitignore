@@ -20,3 +20,16 @@ data/processed/
 # BUT keep our bundled serving model in the repo
 !src/serving/model/
 !src/serving/model/**
+
+
+*.log
+logs/
+
+.ipynb_checkpoints/
+
+.vscode/
+
+*.h5
+*.pt
+*.ckpt
+*.pkl
