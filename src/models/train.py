@@ -1,50 +1,51 @@
-import mlflow
-import pandas as pd
-import mlflow.xgboost
+from sklearn.pipeline import Pipeline
+from sklearn.compose import ColumnTransformer
+from sklearn.preprocessing import OneHotEncoder
 from xgboost import XGBClassifier
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import recall_score
+import joblib
+import pandas as pd
 
-def train_model(df: pd.DataFrame, target_col: str):
-    """
-    Trains an XGBoost model and logs with MLflow.
+def train_model(df, target_col):
 
-    Args:
-        df (pd.DataFrame): Feature dataset.
-        target_col (str): Name of the target column.
-    """
     X = df.drop(columns=[target_col])
     y = df[target_col]
+    y = y.map({"No": 0, "Yes": 1})
 
-    X_train, X_test, y_train, y_test = train_test_split(
-        X, y, test_size=0.2, random_state=42
+    categorical_cols = X.select_dtypes(include=['object']).columns
+    numeric_cols = X.select_dtypes(exclude=['object']).columns
+
+    preprocessor = ColumnTransformer(
+        transformers=[
+            ("cat", OneHotEncoder(handle_unknown="ignore"), categorical_cols),
+            ("num", "passthrough", numeric_cols)
+        ]
     )
 
-    model = XGBClassifier(
-        n_estimators=300,
-        learning_rate=0.1,
-        max_depth=6,
-        random_state=42,
-        n_jobs=-1,
-        eval_metric="logloss"
-    )
+    pipeline = Pipeline([
+        ("preprocessor", preprocessor),
+        ("model", XGBClassifier(
+            n_estimators=300,
+            learning_rate=0.1,
+            max_depth=6,
+            random_state=42,
+            n_jobs=-1,
+            eval_metric="logloss"
+        ))
+    ])
 
-    with mlflow.start_run():
-        # Train model
-        model.fit(X_train, y_train)
-        preds = model.predict(X_test)
-        acc = accuracy_score(y_test, preds)
-        rec = recall_score(y_test, preds)
+    pipeline.fit(X, y)
 
-        # Log params, metrics, and model
-        mlflow.log_param("n_estimators", 300)
-        mlflow.log_metric("accuracy", acc)
-        mlflow.log_metric("recall", rec)
-        mlflow.xgboost.log_model(model, "model")
+    # ✅ Save full pipeline
+    joblib.dump(pipeline, "pipeline.pkl")
 
-        # 🔑 Log dataset so it shows in MLflow UI
-        train_ds = mlflow.data.from_pandas(df, source="training_data")
-        mlflow.log_input(train_ds, context="training")
+    print("✅ Pipeline saved as pipeline.pkl")
 
-        print(f"Model trained. Accuracy: {acc:.4f}, Recall: {rec:.4f}")
+
+
+if __name__ == "__main__":
+
+    # Load dataset
+    df = pd.read_csv("/Users/bitla/OneDrive/Desktop/Telco-Customer-Churn-ML/data/raw/Telco-Customer-Churn.csv")
+
+    # Call training
+    train_model(df, target_col="Churn")
