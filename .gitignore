@@ -33,4 +33,3 @@ logs/
 *.pt
 *.ckpt
 *.pkl
-src/serving/model/**/artifacts/model/
