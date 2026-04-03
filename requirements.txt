@@ -37,7 +37,6 @@ graphql-relay==3.2.0
 great_expectations==1.5.8
 gunicorn==22.0.0
 h11==0.16.0
-huggingface_hub==1.8.0
 idna==3.10
 importlib_metadata==7.2.1
 iniconfig==2.1.0
